@@ -177,17 +177,17 @@ function _M.play_script(self, name, keytab, valtab)
       data, err = sock:receive(8) 
 
       local ksiz, pos = _get_byte4(data, 1)
-      ngx.log(ngx.DEBUG, "ksiz= ", ksiz)
+      --ngx.log(ngx.DEBUG, "ksiz= ", ksiz)
       
       local vsiz = _get_byte4(data, pos)
-      ngx.log(ngx.DEBUG, "vsiz= ", vsiz)
+      --ngx.log(ngx.DEBUG, "vsiz= ", vsiz)
       
       data, err = sock:receive(ksiz) 
-      ngx.log(ngx.DEBUG, "key= ", data)
+      --ngx.log(ngx.DEBUG, "key= ", data)
       t["key"] = data
 
       data, err = sock:receive(vsiz) 
-      ngx.log(ngx.DEBUG, "val= ", data)
+      --ngx.log(ngx.DEBUG, "val= ", data)
       t["value"] = data
 
       vals[#vals+1] = t
@@ -237,7 +237,7 @@ function _M.set_bulk(self, keytab, valtab)
 
    rv = _get_byte4(data, pos)
 
-   ngx.log(ngx.DEBUG, "# of stored= ", rv)
+   --ngx.log(ngx.DEBUG, "# of stored= ", rv)
 
    return rv, nil
 end
@@ -274,7 +274,7 @@ function _M.remove_bulk(self, keytab)
 
    rv = _get_byte4(data, pos)
 
-   ngx.log(ngx.DEBUG, "# of removed= ", rv)
+   --ngx.log(ngx.DEBUG, "# of removed= ", rv)
 
    return rv, nil
 end
@@ -311,7 +311,7 @@ function _M.get_bulk(self, keytab)
 
    local num, pos = _get_byte4(data, pos)
 
-   ngx.log(ngx.DEBUG, "hits= ", num)
+   --ngx.log(ngx.DEBUG, "hits= ", num)
 
    -- data
    local vals = {}
@@ -321,26 +321,26 @@ function _M.get_bulk(self, keytab)
       data, err = sock:receive(10) 
 
       rv, pos = _get_byte2(data, 1)
-      ngx.log(ngx.DEBUG, "dbidx= ", rv)
+      --ngx.log(ngx.DEBUG, "dbidx= ", rv)
       t["dbidx"] = rv
 
       local ksiz, pos = _get_byte4(data, pos)
-      ngx.log(ngx.DEBUG, "ksiz= ", ksiz)
+      --ngx.log(ngx.DEBUG, "ksiz= ", ksiz)
       
       local vsiz = _get_byte4(data, pos)
-      ngx.log(ngx.DEBUG, "vsiz= ", vsiz)
+      --ngx.log(ngx.DEBUG, "vsiz= ", vsiz)
       
       data, err = sock:receive(8)
       local xt = _get_byte8(data, 1)
-      ngx.log(ngx.DEBUG, "xt= ", xt)
+      --ngx.log(ngx.DEBUG, "xt= ", xt)
       t["xt"] = xt
 
       data, err = sock:receive(ksiz) 
-      ngx.log(ngx.DEBUG, "key= ", data)
+      --ngx.log(ngx.DEBUG, "key= ", data)
       t["key"] = data
 
       data, err = sock:receive(vsiz) 
-      ngx.log(ngx.DEBUG, "val= ", data)
+      --ngx.log(ngx.DEBUG, "val= ", data)
       t["value"] = data
 
       vals[#vals+1] = t
