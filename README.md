@@ -6,7 +6,7 @@ lua-resty-kyototycoon - Lua Kyototycoon client driver for ngx_lua based on the c
 
 Description
 ===========
-* A note on KT's binary protocol: http://fallabs.com/kyototycoon/spex.html#protocol
+A note on KT's binary protocol: http://fallabs.com/kyototycoon/spex.html#protocol
 
 
 Example
@@ -102,4 +102,4 @@ get_bulk
 Authors
 =======
 
-Donald Nam <jsunam@gmail.com>, Kakao Corp.
+Soojin Nam <jsunam@gmail.com>, Kakao Corp.
