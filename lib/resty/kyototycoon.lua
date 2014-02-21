@@ -197,20 +197,21 @@ function _M.play_script(self, name, keytab, valtab)
 end
 
 
-function _M.set_bulk(self, keytab, valtab)
+function _M.set_bulk(self, dbtab, keytab, valtab)
    local flags = 0
    local sock = self.sock
 
-   if #keytab ~= #valtab then
+   if #keytab ~= #valtab or #keytab ~= #dbtab then
       return nil, "parameter error"
    end
 
    local t = { _set_byte4(#keytab) }  -- rnum
 
    for i=1, #keytab do
+      local dbidx = dbtab[i]
       local key = keytab[i]
       local val = valtab[i]
-      t[#t+1] = _set_byte2(0)         -- dbidx 
+      t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#val)      -- vsiz
       t[#t+1] = _set_byte8(600)       -- xt
@@ -243,14 +244,20 @@ function _M.set_bulk(self, keytab, valtab)
 end
 
 
-function _M.remove_bulk(self, keytab)
+function _M.remove_bulk(self, dbtab, keytab)
    local flags = 0
    local sock = self.sock
 
+   if #keytab ~= #dbtab then
+      return nil, "parameter error"
+   end
+
    local t = { _set_byte4(#keytab) }  -- rnum
 
-   for i, key in ipairs(keytab) do
-      t[#t+1] = _set_byte2(0)         -- dbidx 
+   for i=1, #keytab do
+      local key = keytab[i]
+      local dbidx = dbtab[i]
+      t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = key                   -- key
    end
@@ -280,16 +287,22 @@ function _M.remove_bulk(self, keytab)
 end
 
 
-function _M.get_bulk(self, keytab)
+function _M.get_bulk(self, dbtab, keytab)
    local flags = 0
    local sock = self.sock
 
+   if #keytab ~= #dbtab then
+      return nil, "parameter error"
+   end
+
    local t = { _set_byte4(#keytab) }  -- rnum
 
-   for i, key in ipairs(keytab) do
-      t[#t+1] = _set_byte2(0)         -- dbidx 
+   for i=1, #keytab do
+      local key = keytab[i]
+      local dbidx = dbtab[i]
+      t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
-      t[#t+1] = key                   -- key 
+      t[#t+1] = key                   -- key
    end
 
    local bytes, err = _send_packet(self, OP_GET_BULK, flags, concat(t))

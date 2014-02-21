@@ -12,6 +12,9 @@ A note on KT's binary protocol: http://fallabs.com/kyototycoon/spex.html#protoco
 Example
 =======
 ```` lua
+lua_package_path  "/usr/local/openresty/lualib/?.lua;;";
+lua_package_cpath "/usr/local/openresty/lualib/?.so;;";
+
 location /ktsettest {
     content_by_lua '
         local kt = require "resty.kyototycoon"
@@ -29,9 +32,10 @@ location /ktsettest {
             return
         end
 
+        local dbtab = { 0, 0, 0 }
         local keytab = { "aa", "bb", "cc" }
         local valtab = { "AA", "BB", "CC" }
-        local num, err = ktc:set_bulk(keytab, valtab)
+        local num, err = ktc:set_bulk(dbtab, keytab, valtab)
         if not num then
            ngx.say("fail to set_bulk: ", err)
            return
@@ -64,8 +68,9 @@ location /ktgettest {
             return
         end
 
+        local dbtab = { 0, 0, 0 }
         local tab = { "aa", "bb", "cc" }
-        local values, err = ktc:get_bulk(tab)
+        local values, err = ktc:get_bulk(dbtab, tab)
         if not values then
            ngx.say("fail to get_bulk: ", err)
            return
