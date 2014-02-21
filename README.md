@@ -11,7 +11,7 @@ A note on KT's binary protocol: http://fallabs.com/kyototycoon/spex.html#protoco
 
 Example
 =======
-
+```` lua
         location /ktsettest {
             content_by_lua '
                 local kt = require "resty.kyototycoon"
@@ -76,6 +76,7 @@ Example
                 end
             ';
         }
+````
 
 
 API
