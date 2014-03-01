@@ -1,5 +1,7 @@
 -- Copyright (C) 2014 Donald Nam, Kakao Corp.
 
+-- lots of code is borrowed from lua-resty-mysql
+
 
 local bit = require "bit"
 local tcp = ngx.socket.tcp
@@ -21,7 +23,7 @@ if not ok then
 end
 
 
-local _M = { _VERSION = '0.11' }
+local _M = { _VERSION = '0.19' }
 
 
 -- constants
@@ -36,6 +38,8 @@ local OP_GET_BULK = 0xBA
 
 local mt = { __index = _M }
 
+
+-- Every numeric value are expressed in big-endian order.
 
 local function _get_byte(data, i)
    local a, b = strbyte(data, i)
@@ -127,22 +131,22 @@ function _M.replication(self, ts, sid)
 end
 
 
-function _M.play_script(self, name, keytab, valtab)
+function _M.play_script(self, name, ktab, vtab)
    local flags = 0
    local sock = self.sock
 
-   if #keytab ~= #valtab then
-      return nil, "parameter error"
+   if not name or #ktab ~= #vtab then
+      return nil, "invalid arguments"
    end
 
    local t = { _set_byte4(#name) }  -- nsiz
    
-   t[#t+1] = _set_byte4(#keytab)    -- rnum
+   t[#t+1] = _set_byte4(#ktab)      -- rnum
    t[#t+1] = name                   -- preocedure name
 
-   for i=1, #keytab do
-      local key = keytab[i]
-      local val = valtab[i]
+   for i=1, #ktab do
+      local key = ktab[i]
+      local val = vtab[i]
       t[#t+1] = _set_byte4(#key)    -- ksiz
       t[#t+1] = _set_byte4(#val)    -- vsiz
       t[#t+1] = key                 -- key
@@ -152,12 +156,12 @@ function _M.play_script(self, name, keytab, valtab)
    local bytes, err = _send_packet(self, OP_PLAY_SCRIPT, flags, concat(t))
 
    if not bytes then
-      return nil, "fail to send packet"
+      return nil, "fail to send packet: " .. err
    end
    
    local data, err = sock:receive(5) 
    if not data then
-      return nil, "failed to receive packet header: " .. err
+      return nil, "failed to receive packet: " .. err
    end
 
    local rv, pos = _get_byte(data, 1)
@@ -168,7 +172,7 @@ function _M.play_script(self, name, keytab, valtab)
 
    local num = _get_byte4(data, pos)
 
-   ngx.log(ngx.DEBUG, "hits= ", num)
+   --print("hits= ", num)
 
    -- data
    local vals = {}
@@ -177,17 +181,17 @@ function _M.play_script(self, name, keytab, valtab)
       data, err = sock:receive(8) 
 
       local ksiz, pos = _get_byte4(data, 1)
-      --ngx.log(ngx.DEBUG, "ksiz= ", ksiz)
+      --print("ksiz= ", ksiz)
       
       local vsiz = _get_byte4(data, pos)
-      --ngx.log(ngx.DEBUG, "vsiz= ", vsiz)
+      --print("vsiz= ", vsiz)
       
       data, err = sock:receive(ksiz) 
-      --ngx.log(ngx.DEBUG, "key= ", data)
+      --print("key= ", data)
       t["key"] = data
 
       data, err = sock:receive(vsiz) 
-      --ngx.log(ngx.DEBUG, "val= ", data)
+      --print("val= ", data)
       t["value"] = data
 
       vals[#vals+1] = t
@@ -197,37 +201,37 @@ function _M.play_script(self, name, keytab, valtab)
 end
 
 
-function _M.set_bulk(self, dbtab, keytab, valtab)
+function _M.set_bulk(self, dbtab, ktab, vtab)
    local flags = 0
    local sock = self.sock
 
-   if #keytab ~= #valtab or #keytab ~= #dbtab then
-      return nil, "parameter error"
+   if #ktab ~= #vtab or #ktab ~= #dbtab then
+      return nil, "invalid arguments"
    end
 
-   local t = { _set_byte4(#keytab) }  -- rnum
+   local t = { _set_byte4(#ktab) }    -- rnum
 
-   for i=1, #keytab do
+   for i=1, #ktab do
       local dbidx = dbtab[i]
-      local key = keytab[i]
-      local val = valtab[i]
+      local key = ktab[i]
+      local value = vtab[i]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
-      t[#t+1] = _set_byte4(#val)      -- vsiz
+      t[#t+1] = _set_byte4(#value)    -- vsiz
       t[#t+1] = _set_byte8(600)       -- xt
       t[#t+1] = key                   -- key
-      t[#t+1] = val                   -- value
+      t[#t+1] = value                 -- value
    end
 
    local bytes, err = _send_packet(self, OP_SET_BULK, flags, concat(t))
 
    if not bytes then
-      return nil, "fail to send packet"
+      return nil, "fail to send packet: " .. err
    end
 
    local data, err = sock:receive(5) 
    if not data then
-      return nil, "failed to receive packet header: " .. err
+      return nil, "failed to receive packet: " .. err
    end
 
    local rv, pos = _get_byte(data, 1)
@@ -238,25 +242,25 @@ function _M.set_bulk(self, dbtab, keytab, valtab)
 
    rv = _get_byte4(data, pos)
 
-   --ngx.log(ngx.DEBUG, "# of stored= ", rv)
+   --print("# of stored= ", rv)
 
    return rv, nil
 end
 
 
-function _M.remove_bulk(self, dbtab, keytab)
+function _M.remove_bulk(self, dbtab, ktab)
    local flags = 0
    local sock = self.sock
 
-   if #keytab ~= #dbtab then
-      return nil, "parameter error"
+   if #ktab ~= #dbtab then
+      return nil, "invalid arguments"
    end
 
-   local t = { _set_byte4(#keytab) }  -- rnum
+   local t = { _set_byte4(#ktab) }    -- rnum
 
-   for i=1, #keytab do
-      local key = keytab[i]
+   for i=1, #ktab do
       local dbidx = dbtab[i]
+      local key = ktab[i]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = key                   -- key
@@ -265,12 +269,12 @@ function _M.remove_bulk(self, dbtab, keytab)
    local bytes, err = _send_packet(self, OP_REMOVE_BULK, flags, concat(t))
 
    if not bytes then
-      return nil, "fail to send packet"
+      return nil, "fail to send packet: " .. err
    end
 
    local data, err = sock:receive(5) 
    if not data then
-      return nil, "failed to receive packet header: " .. err
+      return nil, "failed to receive packet: " .. err
    end
 
    local rv, pos = _get_byte(data, 1)
@@ -281,24 +285,24 @@ function _M.remove_bulk(self, dbtab, keytab)
 
    rv = _get_byte4(data, pos)
 
-   --ngx.log(ngx.DEBUG, "# of removed= ", rv)
+   --print("# of removed= ", rv)
 
    return rv, nil
 end
 
 
-function _M.get_bulk(self, dbtab, keytab)
+function _M.get_bulk(self, dbtab, ktab)
    local flags = 0
    local sock = self.sock
 
-   if #keytab ~= #dbtab then
-      return nil, "parameter error"
+   if #ktab ~= #dbtab then
+      return nil, "invalid arguemtns"
    end
 
-   local t = { _set_byte4(#keytab) }  -- rnum
+   local t = { _set_byte4(#ktab) }    -- rnum
 
-   for i=1, #keytab do
-      local key = keytab[i]
+   for i=1, #ktab do
+      local key = ktab[i]
       local dbidx = dbtab[i]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
@@ -308,12 +312,12 @@ function _M.get_bulk(self, dbtab, keytab)
    local bytes, err = _send_packet(self, OP_GET_BULK, flags, concat(t))
 
    if not bytes then
-      return nil, "fail to send packet"
+      return nil, "fail to send packet: " .. err
    end
 
    local data, err = sock:receive(5) 
    if not data then
-      return nil, "failed to receive packet header: " .. err
+      return nil, "failed to receive packet: " .. err
    end
 
    local rv, pos = _get_byte(data, 1)
@@ -324,42 +328,42 @@ function _M.get_bulk(self, dbtab, keytab)
 
    local num, pos = _get_byte4(data, pos)
 
-   --ngx.log(ngx.DEBUG, "hits= ", num)
+   --print("hits= ", num)
 
    -- data
-   local vals = {}
+   local results = {}
 
-   for i=1,num do
+   for i=1, num do
       local t = {}
       data, err = sock:receive(10) 
 
       rv, pos = _get_byte2(data, 1)
-      --ngx.log(ngx.DEBUG, "dbidx= ", rv)
+      --print("dbidx= ", rv)
       t["dbidx"] = rv
 
       local ksiz, pos = _get_byte4(data, pos)
-      --ngx.log(ngx.DEBUG, "ksiz= ", ksiz)
+      --print("ksiz= ", ksiz)
       
       local vsiz = _get_byte4(data, pos)
-      --ngx.log(ngx.DEBUG, "vsiz= ", vsiz)
+      --print("vsiz= ", vsiz)
       
       data, err = sock:receive(8)
       local xt = _get_byte8(data, 1)
-      --ngx.log(ngx.DEBUG, "xt= ", xt)
+      --print("xt= ", xt)
       t["xt"] = xt
 
       data, err = sock:receive(ksiz) 
-      --ngx.log(ngx.DEBUG, "key= ", data)
+      --print("key= ", data)
       t["key"] = data
 
       data, err = sock:receive(vsiz) 
-      --ngx.log(ngx.DEBUG, "val= ", data)
+      --print("val= ", data)
       t["value"] = data
 
-      vals[#vals+1] = t
+      results[#results+1] = t
    end
 
-   return vals, nil
+   return results, nil
 end
 
 
