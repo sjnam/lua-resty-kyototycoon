@@ -32,9 +32,9 @@ location /test_remove {
             return
         end
 
-        local dbtab = { 0, 0, 0 }
-        local ktab = { "aa", "bb", "cc" }
-        local num, err = ktc:remove_bulk(dbtab, ktab)
+        local tab = {{dbidx=0, key="aaa"}, {dbidx=0, key="bbb"}, 
+           {dbidx=0, key="ccc"}}
+        local num, err = ktc:remove_bulk(tab)
         if not num then
            ngx.say("fail to remove bulk: ", err)
            return
@@ -61,11 +61,11 @@ location /test_get {
             return
         end
 
-        local dbtab = {0, 0, 0 }
-        local tab = { "aa", "bb", "cc" }
-        local results, err = ktc:get_bulk(dbtab, tab)
+        local tab = {{dbidx=0, key="aaa"}, {dbidx=0, key="bbb"}, 
+           {dbidx=0, key="ccc"}}
+        local results, err = ktc:get_bulk(tab)
         if not results then
-           ngx.say("fail to set foo: ", err)
+           ngx.say("fail to get foo: ", err)
            return
         end
 
@@ -92,16 +92,15 @@ location /test_playscript {
             return
         end
 
-        local ktab = { "key" }
-        local vtab = { "aa" }
-        local values, err = ktc:play_script("get", ktab, vtab)
+        local tab = { {key="key", value="aaa"} }
+        local results, err = ktc:play_script("get", tab)
 
-        if not values then
+        if not results then
            ngx.say("fail to play script: ", err)
            return
         end
 
-        for i, v in ipairs(values) do
+        for i, v in ipairs(results) do
            ngx.say(v.key, v.value)
         end
     ';
@@ -124,10 +123,10 @@ location /test_set {
             return
         end
 
-        local dbtab = { 0, 0, 0 }
-        local ktab = { "aa", "bb", "cc" }
-        local vtab = { "AA", "BB", "CC" }
-        local num, err = ktc:set_bulk(dbtab, ktab, vtab)
+        local tab = {{dbidx=0, key="aaa", value="AAA"},
+           {dbidx=0, key="bbb", value="BBB"},                   
+           {dbidx=0, key="ccc", value="CCC"}}
+        local num, err = ktc:set_bulk(tab)
         if not num then
            ngx.say("fail to set foo: ", err)
            return

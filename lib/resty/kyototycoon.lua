@@ -131,26 +131,26 @@ function _M.replication(self, ts, sid)
 end
 
 
-function _M.play_script(self, name, ktab, vtab)
+function _M.play_script(self, name, tab)
    local flags = 0
    local sock = self.sock
 
-   if not name or #ktab ~= #vtab then
+   if not name or not tab or #tab == 0 then
       return nil, "invalid arguments"
    end
 
    local t = { _set_byte4(#name) }  -- nsiz
    
-   t[#t+1] = _set_byte4(#ktab)      -- rnum
+   t[#t+1] = _set_byte4(#tab)       -- rnum
    t[#t+1] = name                   -- preocedure name
 
-   for i=1, #ktab do
-      local key = ktab[i]
-      local val = vtab[i]
+   for i=1, #tab do
+      local key = tab[i]["key"]
+      local value = tab[i]["value"]
       t[#t+1] = _set_byte4(#key)    -- ksiz
-      t[#t+1] = _set_byte4(#val)    -- vsiz
+      t[#t+1] = _set_byte4(#value)  -- vsiz
       t[#t+1] = key                 -- key
-      t[#t+1] = val                 -- value
+      t[#t+1] = value               -- value
    end
 
    local bytes, err = _send_packet(self, OP_PLAY_SCRIPT, flags, concat(t))
@@ -175,7 +175,7 @@ function _M.play_script(self, name, ktab, vtab)
    --print("hits= ", num)
 
    -- data
-   local vals = {}
+   local results = {}
    for i=1, num do
       local t = {}
       data, err = sock:receive(8) 
@@ -194,27 +194,27 @@ function _M.play_script(self, name, ktab, vtab)
       --print("val= ", data)
       t["value"] = data
 
-      vals[#vals+1] = t
+      results[#results+1] = t
    end
 
-   return vals, nil
+   return results, nil
 end
 
 
-function _M.set_bulk(self, dbtab, ktab, vtab)
+function _M.set_bulk(self, tab)
    local flags = 0
    local sock = self.sock
 
-   if #ktab ~= #vtab or #ktab ~= #dbtab then
-      return nil, "invalid arguments"
+   if not tab or #tab == 0 then
+      return nil, "tab is null"
    end
 
-   local t = { _set_byte4(#ktab) }    -- rnum
+   local t = { _set_byte4(#tab) }    -- rnum
 
-   for i=1, #ktab do
-      local dbidx = dbtab[i]
-      local key = ktab[i]
-      local value = vtab[i]
+   for i=1, #tab do
+      local dbidx = tab[i]["dbidx"]
+      local key = tab[i]["key"]
+      local value = tab[i]["value"]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#value)    -- vsiz
@@ -248,19 +248,19 @@ function _M.set_bulk(self, dbtab, ktab, vtab)
 end
 
 
-function _M.remove_bulk(self, dbtab, ktab)
+function _M.remove_bulk(self, tab)
    local flags = 0
    local sock = self.sock
 
-   if #ktab ~= #dbtab then
-      return nil, "invalid arguments"
+   if not tab or #tab == 0 then
+      return nil, "invalid arguemtns"
    end
 
-   local t = { _set_byte4(#ktab) }    -- rnum
+   local t = { _set_byte4(#tab) }    -- rnum
 
-   for i=1, #ktab do
-      local dbidx = dbtab[i]
-      local key = ktab[i]
+   for i=1, #tab do
+      local dbidx = tab[i]["dbidx"]
+      local key = tab[i]["key"]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = key                   -- key
@@ -291,19 +291,19 @@ function _M.remove_bulk(self, dbtab, ktab)
 end
 
 
-function _M.get_bulk(self, dbtab, ktab)
+function _M.get_bulk(self, tab)
    local flags = 0
    local sock = self.sock
 
-   if #ktab ~= #dbtab then
+   if not tab or #tab == 0 then
       return nil, "invalid arguemtns"
    end
 
-   local t = { _set_byte4(#ktab) }    -- rnum
+   local t = { _set_byte4(#tab) }    -- rnum
 
-   for i=1, #ktab do
-      local key = ktab[i]
-      local dbidx = dbtab[i]
+   for i=1, #tab do
+      local dbidx = tab[i]["dbidx"]
+      local key = tab[i]["key"]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = key                   -- key
