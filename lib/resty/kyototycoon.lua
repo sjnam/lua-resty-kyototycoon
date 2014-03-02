@@ -23,7 +23,7 @@ if not ok then
 end
 
 
-local _M = { _VERSION = '0.23' }
+local _M = { _VERSION = '0.19' }
 
 
 -- constants
@@ -215,10 +215,12 @@ function _M.set_bulk(self, tab)
       local dbidx = tab[i]["dbidx"]
       local key = tab[i]["key"]
       local value = tab[i]["value"]
+      local xt = tab[i]["xt"]
+      if not xt then xt = 600 end
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#value)    -- vsiz
-      t[#t+1] = _set_byte8(600)       -- xt
+      t[#t+1] = _set_byte8(xt)        -- xt
       t[#t+1] = key                   -- key
       t[#t+1] = value                 -- value
    end
