@@ -7,6 +7,7 @@ local bit = require "bit"
 local tcp = ngx.socket.tcp
 local strbyte = string.byte
 local strchar = string.char
+local time = os.time
 local band = bit.band
 local bor = bit.bor
 local lshift = bit.lshift
@@ -216,7 +217,7 @@ function _M.set_bulk(self, tab)
       local key = tab[i]["key"]
       local value = tab[i]["value"]
       local xt = tab[i]["xt"]
-      if not xt then xt = 600 end
+      xt = (not xt) and time()+600 or time()+xt
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#value)    -- vsiz
