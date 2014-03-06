@@ -7,7 +7,6 @@ local bit = require "bit"
 local tcp = ngx.socket.tcp
 local strbyte = string.byte
 local strchar = string.char
-local time = os.time
 local band = bit.band
 local bor = bit.bor
 local lshift = bit.lshift
@@ -49,24 +48,22 @@ end
 
 
 local function _get_byte2(data, i)
-   local a, b = strbyte(data, i, i + 1)
-   return bor(lshift(a, 8), b), i + 2
+   local b, a = strbyte(data, i, i + 1)
+   return bor(a, lshift(b, 8)), i + 2
 end
 
 
 local function _get_byte4(data, i)
-   local a, b, c, d = strbyte(data, i, i + 3)
-   return bor(lshift(a, 24), lshift(b, 16), lshift(c, 8), d), i + 4
+   local d, c, b, a = strbyte(data, i, i + 3)
+   return bor(a, lshift(b, 8), lshift(c, 16), lshift(d, 24)), i + 4
 end
 
 
 local function _get_byte8(data, i)
-   local a, b, c, d, e, f, g, h = strbyte(data, i, i + 7)
-
-   local lo = bor(h, lshift(g, 8), lshift(f, 16), lshift(e, 24))
-   local hi = bor(d, lshift(c, 8), lshift(b, 16), lshift(a, 24))
-   return lo + hi * 4294967296, i + 8
-
+    local h, g, f, e, d, c, b, a = strbyte(data, i, i + 7)
+    local lo = bor(a, lshift(b, 8), lshift(c, 16), lshift(d, 24))
+    local hi = bor(e, lshift(f, 8), lshift(g, 16), lshift(h, 24))
+    return lo + hi * 4294967296, i + 8
 end
 
 
@@ -145,9 +142,9 @@ function _M.play_script(self, name, tab)
    t[#t+1] = _set_byte4(#tab)       -- rnum
    t[#t+1] = name                   -- preocedure name
 
-   for i=1, #tab do
-      local key = tab[i]["key"]
-      local value = tab[i]["value"]
+   for i, v in ipairs(tab) do
+      local key = v["key"]
+      local value = v["value"]
       t[#t+1] = _set_byte4(#key)    -- ksiz
       t[#t+1] = _set_byte4(#value)  -- vsiz
       t[#t+1] = key                 -- key
@@ -212,12 +209,13 @@ function _M.set_bulk(self, tab)
 
    local t = { _set_byte4(#tab) }    -- rnum
 
-   for i=1, #tab do
-      local dbidx = tab[i]["dbidx"]
-      local key = tab[i]["key"]
-      local value = tab[i]["value"]
-      local xt = tab[i]["xt"]
-      xt = (not xt) and time()+600 or time()+xt
+   for i, v in ipairs(tab) do
+      local dbidx = v["dbidx"]
+      local key = v["key"]
+      local value = v["value"]
+      local xt = v["xt"]
+--      if not xt then xt = os.time()+600 else xt=os.time()+xt end
+      if not xt then xt = 600 end
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#value)    -- vsiz
@@ -261,9 +259,9 @@ function _M.remove_bulk(self, tab)
 
    local t = { _set_byte4(#tab) }    -- rnum
 
-   for i=1, #tab do
-      local dbidx = tab[i]["dbidx"]
-      local key = tab[i]["key"]
+   for i, v in ipairs(tab) do
+      local dbidx = v["dbidx"]
+      local key = v["key"]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = key                   -- key
@@ -304,9 +302,9 @@ function _M.get_bulk(self, tab)
 
    local t = { _set_byte4(#tab) }    -- rnum
 
-   for i=1, #tab do
-      local dbidx = tab[i]["dbidx"]
-      local key = tab[i]["key"]
+   for i, v in ipairs(tab) do
+      local dbidx = v["dbidx"]
+      local key = v["key"]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = key                   -- key
@@ -352,7 +350,7 @@ function _M.get_bulk(self, tab)
       
       data, err = sock:receive(8)
       local xt = _get_byte8(data, 1)
-      --print("xt= ", xt)
+      print("xt= ", xt)
       t["xt"] = xt
 
       data, err = sock:receive(ksiz) 
