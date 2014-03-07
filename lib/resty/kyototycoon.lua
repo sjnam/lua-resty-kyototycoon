@@ -213,7 +213,7 @@ function _M.set_bulk(self, tab)
       local key = v["key"]
       local value = v["value"]
       local xt = v["xt"]
-      if not xt then xt = 0xffffffff end -- max int ???
+      xt = xt or 0xffffffff           -- max int ???
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#value)    -- vsiz
@@ -348,7 +348,7 @@ function _M.get_bulk(self, tab)
       
       data, err = sock:receive(8)
       local xt = _get_byte8(data, 1)
-      print("xt= ", xt)
+      --print("xt= ", xt)
       t["xt"] = xt
 
       data, err = sock:receive(ksiz) 
