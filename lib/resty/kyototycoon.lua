@@ -42,7 +42,7 @@ local mt = { __index = _M }
 -- Every numeric value are expressed in big-endian order.
 
 local function _get_byte(data, i)
-   local a, b = strbyte(data, i)
+   local a = strbyte(data, i)
    return a, i + 1
 end
 
@@ -84,6 +84,7 @@ local function _set_byte4(n)
                   band(n, 0xff))
 end
 
+
 local function _set_byte8(n)
    local hn = n * 4294967296
    return strchar(band(rshift(hn, 24), 0xff),
@@ -94,25 +95,6 @@ local function _set_byte8(n)
                   band(rshift(n, 16), 0xff),
                   band(rshift(n, 8), 0xff),
                   band(n, 0xff))
-end
-
-local function _dump(data)
-   local len = #data
-   local bytes = new_tab(len, 0)
-   for i = 1, len do
-      bytes[i] = strbyte(data, i)
-   end
-   return concat(bytes, " ")
-end
-
-
-local function _dumphex(data)
-   local len = #data
-   local bytes = new_tab(len, 0)
-   for i = 1, len do
-      bytes[i] = tohex(strbyte(data, i), 2)
-   end
-   return concat(bytes, " ")
 end
 
 
@@ -334,7 +316,7 @@ function _M.get_bulk(self, tab)
 
    for i=1, num do
       local t = {}
-      data, err = sock:receive(10) 
+      data, err = sock:receive(18) 
 
       rv, pos = _get_byte2(data, 1)
       --print("dbidx= ", rv)
@@ -343,11 +325,10 @@ function _M.get_bulk(self, tab)
       local ksiz, pos = _get_byte4(data, pos)
       --print("ksiz= ", ksiz)
       
-      local vsiz = _get_byte4(data, pos)
+      local vsiz, pos = _get_byte4(data, pos)
       --print("vsiz= ", vsiz)
       
-      data, err = sock:receive(8)
-      local xt = _get_byte8(data, 1)
+      local xt = _get_byte8(data, pos)
       --print("xt= ", xt)
       t["xt"] = xt
 
