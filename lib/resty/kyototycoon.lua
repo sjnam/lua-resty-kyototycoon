@@ -84,18 +84,17 @@ local function _set_byte4(n)
                   band(n, 0xff))
 end
 
-
 local function _set_byte8(n)
-   return strchar(band(rshift(n, 56), 0xff),
-                  band(rshift(n, 48), 0xff),
-                  band(rshift(n, 40), 0xff),
-                  band(rshift(n, 32), 0xff),
+   local hn = n * 4294967296
+   return strchar(band(rshift(hn, 24), 0xff),
+                  band(rshift(hn, 16), 0xff),
+                  band(rshift(hn, 8), 0xff),
+                  band(hn, 0xff),
                   band(rshift(n, 24), 0xff),
                   band(rshift(n, 16), 0xff),
                   band(rshift(n, 8), 0xff),
                   band(n, 0xff))
 end
-
 
 local function _dump(data)
    local len = #data
@@ -214,8 +213,7 @@ function _M.set_bulk(self, tab)
       local key = v["key"]
       local value = v["value"]
       local xt = v["xt"]
---      if not xt then xt = os.time()+600 else xt=os.time()+xt end
-      if not xt then xt = 600 end
+      if not xt then xt = os.time() end
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#value)    -- vsiz
