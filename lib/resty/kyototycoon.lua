@@ -98,7 +98,7 @@ local function _set_byte8(n)
 end
 
 
-local function _send_packet(self, magic, flag, req)
+local function _send_request(self, magic, flag, req)
    local sock = self.sock
    local packet = _set_byte(magic) .. _set_byte4(flag) .. req
    return sock:send(packet)
@@ -132,7 +132,7 @@ function _M.play_script(self, name, tab)
       t[#t+1] = value               -- value
    end
 
-   local bytes, err = _send_packet(self, OP_PLAY_SCRIPT, flags, concat(t))
+   local bytes, err = _send_request(self, OP_PLAY_SCRIPT, flags, concat(t))
 
    if not bytes then
       return nil, "fail to send packet: " .. err
@@ -204,7 +204,7 @@ function _M.set_bulk(self, tab)
       t[#t+1] = value                 -- value
    end
 
-   local bytes, err = _send_packet(self, OP_SET_BULK, flags, concat(t))
+   local bytes, err = _send_request(self, OP_SET_BULK, flags, concat(t))
 
    if not bytes then
       return nil, "fail to send packet: " .. err
@@ -247,7 +247,7 @@ function _M.remove_bulk(self, tab)
       t[#t+1] = key                   -- key
    end
 
-   local bytes, err = _send_packet(self, OP_REMOVE_BULK, flags, concat(t))
+   local bytes, err = _send_request(self, OP_REMOVE_BULK, flags, concat(t))
 
    if not bytes then
       return nil, "fail to send packet: " .. err
@@ -290,7 +290,7 @@ function _M.get_bulk(self, tab)
       t[#t+1] = key                   -- key
    end
 
-   local bytes, err = _send_packet(self, OP_GET_BULK, flags, concat(t))
+   local bytes, err = _send_request(self, OP_GET_BULK, flags, concat(t))
 
    if not bytes then
       return nil, "fail to send packet: " .. err
