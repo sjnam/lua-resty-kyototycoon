@@ -23,7 +23,7 @@ if not ok then
 end
 
 
-local _M = { _VERSION = '0.19' }
+local _M = { _VERSION = '0.21' }
 
 
 -- constants
@@ -213,7 +213,7 @@ function _M.set_bulk(self, tab)
       local key = v["key"]
       local value = v["value"]
       local xt = v["xt"]
-      if not xt then xt = os.time() end
+      if not xt then xt = 0xffffffff end -- max int ???
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#value)    -- vsiz
