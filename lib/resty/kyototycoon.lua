@@ -100,8 +100,8 @@ end
 
 local function _send_request(self, magic, flag, req)
    local sock = self.sock
-   local packet = _set_byte(magic) .. _set_byte4(flag) .. req
-   return sock:send(packet)
+   local request = _set_byte(magic) .. _set_byte4(flag) .. req
+   return sock:send(request)
 end
 
 
