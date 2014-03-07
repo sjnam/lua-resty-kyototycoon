@@ -368,7 +368,11 @@ _M.get_bulk = _get_bulk
 
 
 function _M.get(self, tab)
-   return _get_bulk(self, {tab})
+   local res, err = _get_bulk(self, {tab})
+   if not res then
+      return nil, err
+   end
+   return res[1], nil
 end
 
 
