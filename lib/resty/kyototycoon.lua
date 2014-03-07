@@ -180,7 +180,8 @@ function _M.play_script(self, name, tab)
 end
 
 
-function _M.set_bulk(self, tab)
+--function _M.set_bulk(self, tab)
+local function _set_bulk(self, tab)
    local flags = 0
    local sock = self.sock
 
@@ -229,7 +230,15 @@ function _M.set_bulk(self, tab)
 end
 
 
-function _M.remove_bulk(self, tab)
+_M.set_bulk = _set_bulk
+
+
+function _M.set(self, tab)
+   return _set_bulk(self, {tab})
+end
+
+
+local function _remove_bulk(self, tab)
    local flags = 0
    local sock = self.sock
 
@@ -272,7 +281,15 @@ function _M.remove_bulk(self, tab)
 end
 
 
-function _M.get_bulk(self, tab)
+_M.remove_bulk = _remove_bulk
+
+
+function _M.remove(self, tab)
+   return _remove_bulk(self, {tab})
+end
+
+
+local function _get_bulk(self, tab)
    local flags = 0
    local sock = self.sock
 
@@ -344,6 +361,14 @@ function _M.get_bulk(self, tab)
    end
 
    return results, nil
+end
+
+
+_M.get_bulk = _get_bulk
+
+
+function _M.get(self, tab)
+   return _get_bulk(self, {tab})
 end
 
 
