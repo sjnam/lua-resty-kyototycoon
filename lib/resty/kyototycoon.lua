@@ -1,4 +1,4 @@
--- Copyright (C) 2014 Donald Nam, Kakao Corp.
+-- Copyright (C) 2014 Soojin Nam, Kakao Corp.
 
 -- lots of code is borrowed from lua-resty-mysql
 
@@ -121,7 +121,7 @@ function _M.play_script(self, name, tab)
    local t = { _set_byte4(#name) }  -- nsiz
    
    t[#t+1] = _set_byte4(#tab)       -- rnum
-   t[#t+1] = name                   -- preocedure name
+   t[#t+1] = name                   -- procedure name
 
    for i, v in ipairs(tab) do
       local key = v["key"]
@@ -180,13 +180,12 @@ function _M.play_script(self, name, tab)
 end
 
 
---function _M.set_bulk(self, tab)
 local function _set_bulk(self, tab)
    local flags = 0
    local sock = self.sock
 
    if not tab or #tab == 0 then
-      return nil, "tab is null"
+      return nil, "invalid arguments"
    end
 
    local t = { _set_byte4(#tab) }    -- rnum

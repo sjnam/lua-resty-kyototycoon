@@ -136,4 +136,4 @@ get
 Authors
 =======
 
-Donald Nam <jsunam@gmail.com>, Kakao Corp.
+Soojin Nam <jsunam@gmail.com>, Kakao Corp.
