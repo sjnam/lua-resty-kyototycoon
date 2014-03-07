@@ -160,13 +160,20 @@ play_script
 set_bulk
 ---
 
+set
+---
+
 remove_bulk
+---
+
+remove
 ---
 
 get_bulk
 ---
 
-
+get
+---
 
 Authors
 =======
