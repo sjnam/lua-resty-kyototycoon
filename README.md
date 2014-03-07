@@ -171,4 +171,4 @@ get_bulk
 Authors
 =======
 
-Soojin Nam <jsunam@gmail.com>, Kakao Corp.
+Donald Nam <jsunam@gmail.com>, Kakao Corp.
