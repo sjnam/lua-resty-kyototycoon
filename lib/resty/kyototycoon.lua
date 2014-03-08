@@ -191,11 +191,10 @@ local function _set_bulk(self, tab)
    local t = { _set_byte4(#tab) }    -- rnum
 
    for i, v in ipairs(tab) do
-      local dbidx = v["dbidx"]
+      local dbidx = v["dbidx"] or 0
       local key = v["key"]
       local value = v["value"]
-      local xt = v["xt"]
-      xt = xt or 0xffffffff           -- max int ???
+      local xt = v["xt"] or 0xffffffff  -- max int ???
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#value)    -- vsiz
@@ -248,7 +247,7 @@ local function _remove_bulk(self, tab)
    local t = { _set_byte4(#tab) }    -- rnum
 
    for i, v in ipairs(tab) do
-      local dbidx = v["dbidx"]
+      local dbidx = v["dbidx"] or 0
       local key = v["key"]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
@@ -299,7 +298,7 @@ local function _get_bulk(self, tab)
    local t = { _set_byte4(#tab) }    -- rnum
 
    for i, v in ipairs(tab) do
-      local dbidx = v["dbidx"]
+      local dbidx = v["dbidx"] or 0
       local key = v["key"]
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
