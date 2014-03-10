@@ -68,6 +68,8 @@ location /kttest {
         ngx.say(tab.dbidx.." "..tab.xt.." "..tab.key.." "..tab.value)
         
         -- play_script
+        -- http://fallabs.com/kyototycoon/luadoc/
+        -- $ ktserver -scr myscript.lua
         local tab = { {key="key", value="aaa"} }
         local results, err = ktc:play_script("get", tab)
         if not results then
