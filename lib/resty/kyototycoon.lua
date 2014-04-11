@@ -17,12 +17,6 @@ local setmetatable = setmetatable
 local error = error
 
 
-local ok, new_tab = pcall(require, "table.new")
-if not ok then
-   new_tab = function (narr, nrec) return {} end
-end
-
-
 local _M = { _VERSION = '0.21' }
 
 
