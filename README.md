@@ -12,9 +12,6 @@ Kyototycoon's binary protocol: http://fallabs.com/kyototycoon/spex.html#protocol
 Example
 =======
 ```` lua
-lua_package_path  "/usr/local/openresty/lualib/?.lua;;";
-lua_package_cpath "/usr/local/openresty/lualib/?.so;;";
-
 location /kttest {
     content_by_lua '
       local kt = require "resty.kyototycoon"
