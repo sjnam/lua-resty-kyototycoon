@@ -11,8 +11,8 @@ local band = bit.band
 local bor = bit.bor
 local lshift = bit.lshift
 local rshift = bit.rshift
-local tohex = bit.tohex
 local concat = table.concat
+local tostring = tostring
 local setmetatable = setmetatable
 local error = error
 
@@ -117,9 +117,9 @@ function _M.play_script(self, name, tab)
    t[#t+1] = _set_byte4(#tab)       -- rnum
    t[#t+1] = name                   -- procedure name
 
-   for i, v in ipairs(tab) do
-      local key = v["key"]
-      local value = v["value"]
+   for _, v in ipairs(tab) do
+      local key = v.key or v.KEY
+      local value = v.value or v.VALUE
       t[#t+1] = _set_byte4(#key)    -- ksiz
       t[#t+1] = _set_byte4(#value)  -- vsiz
       t[#t+1] = key                 -- key
@@ -184,11 +184,14 @@ local function _set_bulk(self, tab)
 
    local t = { _set_byte4(#tab) }    -- rnum
 
-   for i, v in ipairs(tab) do
-      local dbidx = v["dbidx"] or 0
-      local key = v["key"]
-      local value = v["value"]
-      local xt = v["xt"] or 0xffffffff  -- max int ???
+   for _, v in ipairs(tab) do
+      local dbidx = v.dbidx or v.DBIDX or 0
+      local key = v[1]
+      local value = v[2]
+      if type(value) ~= "string" then
+         value = tostring(value)
+      end
+      local xt = v[3] or 0xffffffff   -- max int ???
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = _set_byte4(#value)    -- vsiz
@@ -225,8 +228,8 @@ end
 _M.set_bulk = _set_bulk
 
 
-function _M.set(self, tab)
-   return _set_bulk(self, {tab})
+function _M.set(self, ...)
+   return _set_bulk(self, {{...}})
 end
 
 
@@ -240,9 +243,9 @@ local function _remove_bulk(self, tab)
 
    local t = { _set_byte4(#tab) }    -- rnum
 
-   for i, v in ipairs(tab) do
-      local dbidx = v["dbidx"] or 0
-      local key = v["key"]
+   for _, v in ipairs(tab) do
+      local dbidx = 0
+      local key = v
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = key                   -- key
@@ -276,8 +279,8 @@ end
 _M.remove_bulk = _remove_bulk
 
 
-function _M.remove(self, tab)
-   return _remove_bulk(self, {tab})
+function _M.remove(self, key)
+   return _remove_bulk(self, {key})
 end
 
 
@@ -291,9 +294,9 @@ local function _get_bulk(self, tab)
 
    local t = { _set_byte4(#tab) }    -- rnum
 
-   for i, v in ipairs(tab) do
-      local dbidx = v["dbidx"] or 0
-      local key = v["key"]
+   for _, v in ipairs(tab) do
+      local dbidx = 0
+      local key = v
       t[#t+1] = _set_byte2(dbidx)     -- dbidx 
       t[#t+1] = _set_byte4(#key)      -- ksiz
       t[#t+1] = key                   -- key
@@ -359,8 +362,8 @@ end
 _M.get_bulk = _get_bulk
 
 
-function _M.get(self, tab)
-   local res, err = _get_bulk(self, {tab})
+function _M.get(self, key)
+   local res, err = _get_bulk(self, {key})
    if not res then
       return nil, err
    end
