@@ -367,7 +367,9 @@ function _M.get(self, key)
    if not res then
       return nil, err
    end
-   return res[1], nil
+
+   local t = res[1]
+   return t.value, nil
 end
 
 
