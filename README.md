@@ -51,12 +51,12 @@ location /kttest {
       ngx.say(v.dbidx, " ", v.xt, " ", v.key, " ", v.value)
       end
       --[[
-      local tab, err = ktc:get("aaa") -- {key="aaa"}
-      if not tab then
+      local val, err = ktc:get("aaa") -- {key="aaa"}
+      if not val then
          ngx.say("fail to get data: ", err)
          return
       end
-      ngx.say(tab.dbidx.." "..tab.xt.." "..tab.key.." "..tab.value)
+      ngx.say(val)
       --]]
 
       -- play_script
