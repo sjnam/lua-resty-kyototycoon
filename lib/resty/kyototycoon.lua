@@ -170,7 +170,11 @@ function _M.play_script(self, name, tab)
       results[#results+1] = t
    end
 
-   return results, nil
+   if #results == 0 then
+      return nil, "no record was found"
+   else
+      return results, nil
+   end
 end
 
 
@@ -355,7 +359,11 @@ local function _get_bulk(self, tab)
       results[#results+1] = t
    end
 
-   return results, nil
+   if #results == 0 then
+      return nil, "no record was found"
+   else
+      return results, nil
+   end
 end
 
 
