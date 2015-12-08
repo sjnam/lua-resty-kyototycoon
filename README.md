@@ -121,4 +121,4 @@ get
 Authors
 =======
 
-Soojin Nam <jsunam@gmail.com>, Daum Kakao Corp.
+Soojin Nam <jsunam@gmail.com>, Kakao Corp.
