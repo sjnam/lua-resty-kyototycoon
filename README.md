@@ -1,8 +1,10 @@
 Name
 ====
-
 lua-resty-kyototycoon - Lua Kyototycoon client driver for ngx_lua based on the cosocket API
 
+Status
+======
+This library is still experimental and under early development.
 
 Description
 ===========
