@@ -15,6 +15,7 @@ local concat = table.concat
 local tostring = tostring
 local setmetatable = setmetatable
 local error = error
+local ipairs = ipairs
 
 
 local _M = { _VERSION = '0.21' }
