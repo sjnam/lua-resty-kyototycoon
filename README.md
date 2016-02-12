@@ -119,12 +119,30 @@ remove_bulk
 
 remove
 ---
+`syntax: ok, err = ktc:remove(key)`
+
+Deletes the key from kyototycoon immediately.
+
+The key to be deleted must already exist in kyototycoon.
+
+In case of success, returns `1`. In case of errors, returns `nil` with a string describing the error.
+
 
 get_bulk
 ---
 
 get
 ---
+`syntax: value, err = ktc:get(key)`
+
+Get a single entry in the kytotycoon server via a single key.
+
+The key's value will be returned if the entry is found and no error happens.
+
+In case of errors, `nil` values will be turned for decribing the error.
+
+If the entry is not found, then three `nil` values will be returned.
+
 
 Authors
 =======
