@@ -13,8 +13,7 @@ our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
 };
 
-$ENV{TEST_NGINX_RESOLVER} = '8.8.8.8';
-$ENV{TEST_NGINX_KT_PORT} ||= 1978;
+$ENV{TEST_NGINX_KT_PORT} = 1978;
 
 no_long_string();
 
@@ -29,19 +28,18 @@ __DATA__
 --- config
     location /t {
         content_by_lua '
-            local cjson = require "cjson"
-            local kyototycoon = require "resty.kyototycoon"
-            local kt = kyototycoon:new()
+            local kt = require "resty.kyototycoon"
+            local ktc = kt:new()
 
-            kt:set_timeout(1000) -- 1 sec
+            ktc:set_timeout(1000) -- 1 sec
 
-            local ok, err = kt:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
+            local ok, err = ktc:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
             if not ok then
                 ngx.say("failed to connect to kt: ", err)
                 return
             end
 
-            local ok, err = kt:set("kyoto", "tycoon")
+            local ok, err = ktc:set("kyoto", "tycoon")
             if not ok then
                 ngx.say("failed to set: ", err)
                 return
@@ -49,7 +47,7 @@ __DATA__
 
             ngx.say("set kyoto ok")
 
-            local res, err = kt:get("kyoto")
+            local res, err = ktc:get("kyoto")
             if err then
                 ngx.say("failed to get kyoto: ", err)
                 return
@@ -62,7 +60,7 @@ __DATA__
                 ngx.say("kyoto: ", res)
             end
 
-            kt:close()
+            ktc:close()
         ';
     }
 --- request
@@ -80,19 +78,18 @@ kyoto: tycoon
 --- config
     location /t {
         content_by_lua '
-            local cjson = require "cjson"
-            local kyototycoon = require "resty.kyototycoon"
-            local kt = kyototycoon:new()
+            local kt = require "resty.kyototycoon"
+            local ktc = kt:new()
 
-            kt:set_timeout(1000) -- 1 sec
+            ktc:set_timeout(1000) -- 1 sec
 
-            local ok, err = kt:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
+            local ok, err = ktc:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
             if not ok then
                 ngx.say("failed to connect to kt: ", err)
                 return
             end
 
-            ok, err = kt:set("count", 1)
+            ok, err = ktc:set("count", 1)
             if not ok then
                 ngx.say("failed to set: ", err)
                 return
@@ -100,7 +97,7 @@ kyoto: tycoon
 
             ngx.say("set count ok")
 
-            local res, err = kt:get("count")
+            local res, err = ktc:get("count")
             if err then
                 ngx.say("failed to get count ", err)
                 return
@@ -113,7 +110,7 @@ kyoto: tycoon
                 ngx.say("count: ", res)
             end
 
-            kt:close()
+            ktc:close()
         ';
     }
 --- request
@@ -131,25 +128,24 @@ count: 1
 --- config
     location /t {
         content_by_lua '
-            local cjson = require "cjson"
-            local kyototycoon = require "resty.kyototycoon"
-            local kt = kyototycoon:new()
+            local kt = require "resty.kyototycoon"
+            local ktc = kt:new()
 
-            kt:set_timeout(1000) -- 1 sec
+            ktc:set_timeout(1000) -- 1 sec
 
-            local ok, err = kt:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
+            local ok, err = ktc:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
             if not ok then
                 ngx.say("failed to connect to kt: ", err)
                 return
             end
 
-            ok, err = kt:set("kyoto", "tycoon")
+            ok, err = ktc:set("kyoto", "tycoon")
             if not ok then
                 ngx.say("failed to set: ", err)
                 return
             end
 
-            ok, err = kt:set("tokyo", "cabinet")
+            ok, err = ktc:set("tokyo", "cabinet")
             if not ok then
                 ngx.say("failed to set: ", err)
                 return
@@ -157,7 +153,7 @@ count: 1
 
             ngx.say("set kyoto, tokyo ok")
 
-            res, err = kt:get_bulk{ "kyoto", "tokyo" }
+            local res, err = ktc:get_bulk{ "kyoto", "tokyo" }
             if err then
                 ngx.say("failed to get kyoto: ", err)
                 return
@@ -166,7 +162,7 @@ count: 1
             for _, v in ipairs(res) do
                 ngx.say(v.key, ": ", v.value)
             end
-            kt:close()
+            ktc:close()
         ';
     }
 --- request
@@ -185,19 +181,18 @@ tokyo: cabinet
 --- config
     location /t {
         content_by_lua '
-            local cjson = require "cjson"
-            local kyototycoon = require "resty.kyototycoon"
-            local kt = kyototycoon:new()
+            local kt = require "resty.kyototycoon"
+            local ktc = kt:new()
 
-            kt:set_timeout(1000) -- 1 sec
+            ktc:set_timeout(1000) -- 1 sec
 
-            local ok, err = kt:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
+            local ok, err = ktc:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
             if not ok then
                 ngx.say("failed to connect to kt: ", err)
                 return
             end
 
-            ok, err = kt:set("kyoto", "tycoon")
+            ok, err = ktc:set("kyoto", "tycoon")
             if not ok then
                 ngx.say("failed to set: ", err)
                 return
@@ -205,7 +200,7 @@ tokyo: cabinet
 
             ngx.say("set kyoto ok")
 
-            res, err = kt:get_bulk({"kyoto", "tokyo" })
+            local res, err = ktc:get_bulk({"kyoto", "tokyo" })
             if err then
                 ngx.say("failed to get kyoto: ", err)
                 return
@@ -214,7 +209,7 @@ tokyo: cabinet
             for _, v in ipairs(res) do
                 ngx.say(v.key, ": ", v.value)
             end
-            kt:close()
+            ktc:close()
         ';
     }
 --- request
@@ -232,19 +227,18 @@ kyoto: tycoon
 --- config
     location /t {
         content_by_lua '
-            local cjson = require "cjson"
-            local kyototycoon = require "resty.kyototycoon"
-            local kt = kyototycoon:new()
+            local kt = require "resty.kyototycoon"
+            local ktc = kt:new()
 
-            kt:set_timeout(1000) -- 1 sec
+            ktc:set_timeout(1000) -- 1 sec
 
-            local ok, err = kt:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
+            local ok, err = ktc:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
             if not ok then
                 ngx.say("failed to connect to kt: ", err)
                 return
             end
 
-            ok, err = kt:set_bulk{
+            ok, err = ktc:set_bulk{
                 {"kyoto", "tycoon"},
                 {"tokyo", "cabinet"}
             }
@@ -255,7 +249,7 @@ kyoto: tycoon
 
             ngx.say("set kyoto, tokyo ok")
 
-            local res, err = kt:get_bulk{ "kyoto", "tokyo" }
+            local res, err = ktc:get_bulk{ "kyoto", "tokyo" }
             if err then
                 ngx.say("failed to get kyoto: ", err)
                 return
@@ -264,7 +258,7 @@ kyoto: tycoon
             for _, v in ipairs(res) do
                 ngx.say(v.key, ": ", v.value)
             end
-            kt:close()
+            ktc:close()
         ';
     }
 --- request
@@ -283,22 +277,22 @@ tokyo: cabinet
 --- config
     location /t {
         content_by_lua '
-            local cjson = require "cjson"
-            local kyototycoon = require "resty.kyototycoon"
-            local kt = kyototycoon:new()
+            local kt = require "resty.kyototycoon"
+            local ktc = kt:new()
 
-            kt:set_timeout(1000) -- 1 sec
+            ktc:set_timeout(1000) -- 1 sec
 
-            local ok, err = kt:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
+            local ok, err = ktc:connect("127.0.0.1", $TEST_NGINX_KT_PORT)
             if not ok then
                 ngx.say("failed to connect to kt: ", err)
                 return
             end
 
-            ok, err = kt:set_bulk({
+            ok, err = ktc:set_bulk{
                 {"kyoto", "tycoon"},
                 {"tokyo", "cabinet"},
-                {"osaka", "tyrant"}})
+                {"osaka", "tyrant"}
+            }
             if not ok then
                 ngx.say("failed to set_bulk: ", err)
                 return
@@ -306,13 +300,13 @@ tokyo: cabinet
 
             ngx.say("set kyoto, tokyo ok")
 
-            res, err = kt:remove_bulk({ "kyoto", "tokyo" })
+            local res, err = ktc:remove_bulk({ "kyoto", "tokyo" })
             if err then
                 ngx.say("failed to remove_bulk: ", err)
                 return
             end
 
-            res, err = kt:get_bulk({ "kyoto", "tokyo", "osaka" })
+            res, err = ktc:get_bulk({ "kyoto", "tokyo", "osaka" })
             if err then
                 ngx.say("failed to get_bulk: ", err)
                 return
@@ -321,7 +315,7 @@ tokyo: cabinet
             for _, v in ipairs(res) do
                 ngx.say(v.key, ": ", v.value)
             end
-            kt:close()
+            ktc:close()
         ';
     }
 --- request
