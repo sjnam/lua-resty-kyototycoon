@@ -95,6 +95,24 @@ location /kttest {
 API
 ===
 
+new
+---
+`syntax: ktc, err = kt:new(opts?)`
+
+Creates a kyototycoon object. In case of failures, returns `nil` and a string describing the error.
+
+It accepts an optional `opts` table argument.
+
+connect
+-------
+`syntax: ok, err = ktc:connect(host, port)`
+
+`syntax: ok, err = ktc:connect("unix:/path/to/unix.sock")`
+
+Attempts to connect to the remote host and port that the kyototycoon server is listening to or a local unix domain socket file listened by the kyototycoon server.
+
+Before actually resolving the host name and connecting to the remote backend, this method will always look up the connection pool for matched idle connections created by previous calls of this method.
+
 
 replication
 ---
@@ -142,6 +160,43 @@ The key's value will be returned if the entry is found and no error happens.
 In case of errors, `nil` values will be turned for decribing the error.
 
 If the entry is not found, then three `nil` values will be returned.
+
+
+set_timeout
+----------
+`syntax: ok, err = ktc:set_timeout(time)`
+
+Sets the timeout (in ms) protection for subsequent operations, including the `connect` method.
+
+Returns 1 when successful and nil plus a string describing the error otherwise.
+
+set_keepalive
+------------
+`syntax: ok, err = ktc:set_keepalive(max_idle_timeout, pool_size)`
+
+Puts the current kyototycoon connection immediately into the ngx_lua cosocket connection pool.
+
+You can specify the max idle timeout (in ms) when the connection is in the pool and the maximal size of the pool every nginx worker process.
+
+In case of success, returns `1`. In case of errors, returns `nil` with a string describing the error.
+
+Only call this method in the place you would have called the `close` method instead. Calling this method will immediately turn the current kyototycoon object into the `closed` state. Any subsequent operations other than `connect()` on the current objet will return the `closed` error.
+
+get_reused_times
+----------------
+`syntax: times, err = ktc:get_reused_times()`
+
+This method returns the (successfully) reused times for the current connection. In case of error, it returns `nil` and a string describing the error.
+
+If the current connection does not come from the built-in connection pool, then this method always returns `0`, that is, the connection has never been reused (yet). If the connection comes from the connection pool, then the return value is always non-zero. So this method can also be used to determine if the current connection comes from the pool.
+
+close
+-----
+`syntax: ok, err = ktc:close()`
+
+Closes the current kyototycoon connection and returns the status.
+
+In case of success, returns `1`. In case of errors, returns `nil` with a string describing the error.
 
 
 Authors
