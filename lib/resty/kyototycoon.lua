@@ -57,7 +57,7 @@ local function _get_byte8(data, i)
     local h, g, f, e, d, c, b, a = strbyte(data, i, i + 7)
     local lo = bor(a, lshift(b, 8), lshift(c, 16), lshift(d, 24))
     local hi = bor(e, lshift(f, 8), lshift(g, 16), lshift(h, 24))
-    return lo + hi * 4294967296, i + 8
+    return lo + hi * 2^32, i + 8
 end
 
 
@@ -80,7 +80,7 @@ end
 
 
 local function _set_byte8(n)
-   local hn = n * 4294967296
+   local hn = n * 2^32
    return strchar(band(rshift(hn, 24), 0xff),
                   band(rshift(hn, 16), 0xff),
                   band(rshift(hn, 8), 0xff),
