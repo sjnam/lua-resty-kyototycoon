@@ -107,6 +107,12 @@ set_bulk
 
 set
 ---
+`syntax: ok, err = ktc:set(key, value, exptime)`
+
+Inserts an entry into kyototycoon unconditionally. If the key already exists, overrides it.
+
+The `exptime` parameter is optional, defaults to `0xffffffff`.
+
 
 remove_bulk
 ---
