@@ -8,6 +8,8 @@ This library is still experimental and under early development.
 
 Description
 ===========
+Lua client driver for KyotoTycoon using its binary protocol.
+
 Kyototycoon's binary protocol: http://fallabs.com/kyototycoon/spex.html#protocol
 
 
@@ -92,7 +94,7 @@ location /kttest {
 ````
 
 
-API
+Methods
 ===
 
 new
