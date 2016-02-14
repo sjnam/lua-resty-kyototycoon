@@ -12,6 +12,7 @@ local bor = bit.bor
 local lshift = bit.lshift
 local rshift = bit.rshift
 local concat = table.concat
+local insert = table.insert
 local tostring = tostring
 local setmetatable = setmetatable
 local error = error
@@ -115,16 +116,16 @@ function _M.play_script(self, name, tab)
 
    local t = { _set_byte4(#name) }  -- nsiz
    
-   t[#t+1] = _set_byte4(#tab)       -- rnum
-   t[#t+1] = name                   -- procedure name
+   insert(t, _set_byte4(#tab))      -- rnum
+   insert(t, name)                  -- procedure name
 
    for _, v in ipairs(tab) do
       local key = v.key or v.KEY
       local value = v.value or v.VALUE
-      t[#t+1] = _set_byte4(#key)    -- ksiz
-      t[#t+1] = _set_byte4(#value)  -- vsiz
-      t[#t+1] = key                 -- key
-      t[#t+1] = value               -- value
+      insert(t, _set_byte4(#key))   -- ksiz
+      insert(t, _set_byte4(#value)) -- vsiz
+      insert(t, key)                -- key
+      insert(t, value)              -- value
    end
 
    local bytes, err = _send_request(self, OP_PLAY_SCRIPT, flags, concat(t))
@@ -190,19 +191,19 @@ local function _set_bulk(self, tab)
    local t = { _set_byte4(#tab) }    -- rnum
 
    for _, v in ipairs(tab) do
-      local dbidx = v.dbidx or v.DBIDX or 0
+      local dbidx = 0
       local key = v[1]
       local value = v[2]
       if type(value) ~= "string" then
          value = tostring(value)
       end
       local xt = v[3] or 0xffffffff   -- max int ???
-      t[#t+1] = _set_byte2(dbidx)     -- dbidx 
-      t[#t+1] = _set_byte4(#key)      -- ksiz
-      t[#t+1] = _set_byte4(#value)    -- vsiz
-      t[#t+1] = _set_byte8(xt)        -- xt
-      t[#t+1] = key                   -- key
-      t[#t+1] = value                 -- value
+      insert(t, _set_byte2(dbidx))    -- dbidx 
+      insert(t, _set_byte4(#key))     -- ksiz
+      insert(t, _set_byte4(#value))   -- vsiz
+      insert(t, _set_byte8(xt))       -- xt
+      insert(t, key)                  -- key
+      insert(t, value)                -- value
    end
 
    local bytes, err = _send_request(self, OP_SET_BULK, flags, concat(t))
@@ -249,11 +250,11 @@ local function _remove_bulk(self, tab)
    local t = { _set_byte4(#tab) }    -- rnum
 
    for _, v in ipairs(tab) do
-      local dbidx = 0
+      local dbidx = v.dbidx or v.DBIDX or 0
       local key = v
-      t[#t+1] = _set_byte2(dbidx)     -- dbidx 
-      t[#t+1] = _set_byte4(#key)      -- ksiz
-      t[#t+1] = key                   -- key
+      insert(t, _set_byte2(dbidx))    -- dbidx 
+      insert(t, _set_byte4(#key))     -- ksiz
+      insert(t, key)                  -- key
    end
 
    local bytes, err = _send_request(self, OP_REMOVE_BULK, flags, concat(t))
@@ -300,11 +301,11 @@ local function _get_bulk(self, tab)
    local t = { _set_byte4(#tab) }    -- rnum
 
    for _, v in ipairs(tab) do
-      local dbidx = 0
+      local dbidx = v.dbidx or v.DBIDX or 0
       local key = v
-      t[#t+1] = _set_byte2(dbidx)     -- dbidx 
-      t[#t+1] = _set_byte4(#key)      -- ksiz
-      t[#t+1] = key                   -- key
+      insert(t, _set_byte2(dbidx))    -- dbidx 
+      insert(t, _set_byte4(#key))     -- ksiz
+      insert(t, key)                  -- key
    end
 
    local bytes, err = _send_request(self, OP_GET_BULK, flags, concat(t))
