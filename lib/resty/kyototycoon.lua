@@ -93,9 +93,9 @@ local function _set_byte8(n)
 end
 
 
-local function _send_request(self, magic, flag, req)
+local function _send_request(self, magic, flags, req)
    local sock = self.sock
-   local request = _set_byte(magic) .. _set_byte4(flag) .. req
+   local request = _set_byte(magic) .. _set_byte4(flags) .. req
    return sock:send(request)
 end
 
@@ -106,7 +106,7 @@ end
 
 
 function _M.play_script(self, name, tab)
-   local flags = 0
+   local flags = flags or 0
    local sock = self.sock
 
    if not name or not tab or #tab == 0 then
@@ -180,7 +180,7 @@ end
 
 
 local function _set_bulk(self, tab)
-   local flags = 0
+   local flags = flags or 0
    local sock = self.sock
 
    if not tab or #tab == 0 then
@@ -239,7 +239,7 @@ end
 
 
 local function _remove_bulk(self, tab)
-   local flags = 0
+   local flags = flags or 0
    local sock = self.sock
 
    if not tab or #tab == 0 then
@@ -290,7 +290,7 @@ end
 
 
 local function _get_bulk(self, tab)
-   local flags = 0
+   local flags = flags or 0
    local sock = self.sock
 
    if not tab or #tab == 0 then
@@ -442,3 +442,4 @@ end
 
 
 return _M
+
