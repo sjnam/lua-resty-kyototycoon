@@ -116,9 +116,6 @@ Attempts to connect to the remote host and port that the kyototycoon server is l
 Before actually resolving the host name and connecting to the remote backend, this method will always look up the connection pool for matched idle connections created by previous calls of this method.
 
 
-replication
----
-
 play_script
 ---
 
