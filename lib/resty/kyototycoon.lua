@@ -191,13 +191,13 @@ local function _set_bulk(self, tab)
    local t = { _set_byte4(#tab) }    -- rnum
 
    for _, v in ipairs(tab) do
-      local dbidx = 0
       local key = v[1]
       local value = v[2]
       if type(value) ~= "string" then
          value = tostring(value)
       end
       local xt = v[3] or 0xffffffff   -- max int ???
+      local dbidx = v[4] or 0
       insert(t, _set_byte2(dbidx))    -- dbidx 
       insert(t, _set_byte4(#key))     -- ksiz
       insert(t, _set_byte4(#value))   -- vsiz
@@ -250,9 +250,8 @@ local function _remove_bulk(self, tab)
    local t = { _set_byte4(#tab) }    -- rnum
 
    for _, v in ipairs(tab) do
-      local dbidx = v.dbidx or v.DBIDX or 0
       local key = v
-      insert(t, _set_byte2(dbidx))    -- dbidx 
+      insert(t, _set_byte2(0))        -- dbidx 
       insert(t, _set_byte4(#key))     -- ksiz
       insert(t, key)                  -- key
    end
@@ -301,9 +300,8 @@ local function _get_bulk(self, tab)
    local t = { _set_byte4(#tab) }    -- rnum
 
    for _, v in ipairs(tab) do
-      local dbidx = v.dbidx or v.DBIDX or 0
       local key = v
-      insert(t, _set_byte2(dbidx))    -- dbidx 
+      insert(t, _set_byte2(0))        -- dbidx 
       insert(t, _set_byte4(#key))     -- ksiz
       insert(t, key)                  -- key
    end
