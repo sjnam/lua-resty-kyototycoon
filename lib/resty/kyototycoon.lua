@@ -1,4 +1,4 @@
--- Copyright (C) 2014 Soojin Nam, Kakao Corp.
+-- Copyright (C) 2014-2016 Soojin Nam, Kakao Corp.
 
 -- lots of code is borrowed from lua-resty-mysql
 
