@@ -18,7 +18,7 @@ Example
 ```` lua
 location /kttest {
     content_by_lua '
-      local kt = require "resty.kyototycoon"
+      local kt = require "resty.kyototycoon.binary"
       local ktc, err = kt:new()
       if not ktc then
          ngx.say("failed to instantiate ktc: ", err)
