@@ -201,4 +201,4 @@ In case of success, returns `1`. In case of errors, returns `nil` with a string 
 Authors
 =======
 
-Soojin Nam <jsunam@gmail.com>, Kakao Corp.
+Soojin Nam <jsunam@gmail.com>
