@@ -1,4 +1,4 @@
--- Copyright (C) 2014-2016 Soojin Nam, Kakao Corp.
+-- Copyright (C) Soojin Nam
 
 -- lots of code is borrowed from lua-resty-mysql
 
@@ -19,7 +19,7 @@ local error = error
 local ipairs = ipairs
 
 
-local _M = { _VERSION = '0.21' }
+local _M = { _VERSION = '0.2.1' }
 
 
 -- constants
