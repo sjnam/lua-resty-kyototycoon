@@ -4,6 +4,7 @@
 
 
 local bit = require "bit"
+
 local tcp = ngx.socket.tcp
 local strbyte = string.byte
 local strchar = string.char
@@ -32,30 +33,27 @@ local OP_REMOVE_BULK = 0xB9
 local OP_GET_BULK = 0xBA
 
 
-local mt = { __index = _M }
-
-
 -- Every numeric value are expressed in big-endian order.
 
-local function _get_byte(data, i)
+local function _get_byte (data, i)
    local a = strbyte(data, i)
    return a, i + 1
 end
 
 
-local function _get_byte2(data, i)
+local function _get_byte2 (data, i)
    local b, a = strbyte(data, i, i + 1)
    return bor(a, lshift(b, 8)), i + 2
 end
 
 
-local function _get_byte4(data, i)
+local function _get_byte4 (data, i)
    local d, c, b, a = strbyte(data, i, i + 3)
    return bor(a, lshift(b, 8), lshift(c, 16), lshift(d, 24)), i + 4
 end
 
 
-local function _get_byte8(data, i)
+local function _get_byte8 (data, i)
     local h, g, f, e, d, c, b, a = strbyte(data, i, i + 7)
     local lo = bor(a, lshift(b, 8), lshift(c, 16), lshift(d, 24))
     local hi = bor(e, lshift(f, 8), lshift(g, 16), lshift(h, 24))
@@ -63,17 +61,17 @@ local function _get_byte8(data, i)
 end
 
 
-local function _set_byte(n)
+local function _set_byte (n)
    return strchar(band(n, 0xff))
 end
 
 
-local function _set_byte2(n)
+local function _set_byte2 (n)
    return strchar(band(rshift(n, 8), 0xff), band(n, 0xff)) 
 end
 
 
-local function _set_byte4(n)
+local function _set_byte4 (n)
    return strchar(band(rshift(n, 24), 0xff),
                   band(rshift(n, 16), 0xff),
                   band(rshift(n, 8), 0xff),
@@ -81,7 +79,7 @@ local function _set_byte4(n)
 end
 
 
-local function _set_byte8(n)
+local function _set_byte8 (n)
    local hn = n * 4294967296
    return strchar(band(rshift(hn, 24), 0xff),
                   band(rshift(hn, 16), 0xff),
@@ -94,19 +92,31 @@ local function _set_byte8(n)
 end
 
 
-local function _send_request(self, magic, flags, req)
+local function _send_request (self, magic, flags, req)
    local sock = self.sock
    local request = _set_byte(magic) .. _set_byte4(flags) .. req
    return sock:send(request)
 end
 
 
-function _M.replication(self, ts, sid)
+local mt = { __index = _M }
+
+
+function _M.new (self)
+   local sock, err = tcp()
+   if not sock then
+      return nil, err
+   end
+   return setmetatable({ sock = sock }, mt)
+end
+
+
+function _M.replication (self, ts, sid)
    return "not implemented", nil
 end
 
 
-function _M.play_script(self, name, tab)
+function _M.play_script (self, name, tab)
    local flags = flags or 0
    local sock = self.sock
 
@@ -180,7 +190,7 @@ function _M.play_script(self, name, tab)
 end
 
 
-local function _set_bulk(self, tab)
+local function _set_bulk (self, tab)
    local flags = flags or 0
    local sock = self.sock
 
@@ -234,12 +244,12 @@ end
 _M.set_bulk = _set_bulk
 
 
-function _M.set(self, ...)
+function _M.set (self, ...)
    return _set_bulk(self, {{...}})
 end
 
 
-local function _remove_bulk(self, tab)
+local function _remove_bulk (self, tab)
    local flags = flags or 0
    local sock = self.sock
 
@@ -284,12 +294,12 @@ end
 _M.remove_bulk = _remove_bulk
 
 
-function _M.remove(self, key)
+function _M.remove (self, key)
    return _remove_bulk(self, {key})
 end
 
 
-local function _get_bulk(self, tab)
+local function _get_bulk (self, tab)
    local flags = flags or 0
    local sock = self.sock
 
@@ -370,7 +380,7 @@ end
 _M.get_bulk = _get_bulk
 
 
-function _M.get(self, key)
+function _M.get (self, key)
    local res, err = _get_bulk(self, {key})
    if not res then
       return nil, err
@@ -381,16 +391,7 @@ function _M.get(self, key)
 end
 
 
-function _M.new(self)
-   local sock, err = tcp()
-   if not sock then
-      return nil, err
-   end
-   return setmetatable({ sock = sock }, mt)
-end
-
-
-function _M.set_timeout(self, timeout)
+function _M.set_timeout (self, timeout)
    local sock = self.sock
    if not sock then
       return nil, "not initialized"
@@ -400,7 +401,7 @@ function _M.set_timeout(self, timeout)
 end
 
 
-function _M.connect(self, ...)
+function _M.connect (self, ...)
    local sock = self.sock
    if not sock then
       return nil, "not initialized"
@@ -410,7 +411,7 @@ function _M.connect(self, ...)
 end
 
 
-function _M.set_keepalive(self, ...)
+function _M.set_keepalive (self, ...)
    local sock = self.sock
    if not sock then
       return nil, "not initialized"
@@ -420,7 +421,7 @@ function _M.set_keepalive(self, ...)
 end
 
 
-function _M.get_reused_times(self)
+function _M.get_reused_times (self)
    local sock = self.sock
    if not sock then
       return nil, "not initialized"
@@ -430,7 +431,7 @@ function _M.get_reused_times(self)
 end
 
 
-function _M.close(self)
+function _M.close (self)
    local sock = self.sock
    if not sock then
       return nil, "not initialized"
